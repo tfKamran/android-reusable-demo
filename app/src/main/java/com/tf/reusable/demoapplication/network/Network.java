@@ -36,7 +36,7 @@ public class Network {
         Thread.setDefaultUncaughtExceptionHandler(Logger.uncaughtExceptionHandler);
 
         if (isConnectedToInternet(context)) {
-            InputStream is = null;
+            InputStream inputStream = null;
 
             try {
                 URL url = new URL(urlString);
@@ -56,7 +56,7 @@ public class Network {
                 // Starts the query
                 conn.connect();
                 int response = conn.getResponseCode();
-                is = conn.getInputStream();
+                inputStream = conn.getInputStream();
 
                 // Convert the InputStream into a string
                 String contentAsString = inputStreamToString(inputStream);
@@ -69,8 +69,8 @@ public class Network {
                 e.printStackTrace();
             } finally {
                 try {
-                    if (is != null)
-                        is.close();
+                    if (inputStream != null)
+                        inputStream.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
