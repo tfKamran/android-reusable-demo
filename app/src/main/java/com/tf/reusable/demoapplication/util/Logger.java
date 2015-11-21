@@ -73,6 +73,18 @@ public class Logger {
             }
     }
 
+    public static void printStackTrace(Throwable e) {
+        if (!ENABLED)
+            return;
+
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+
+        e.printStackTrace(printWriter);
+
+        Log.wtf(e.getClass().getName(), stringWriter.toString());
+    }
+
     public static Thread.UncaughtExceptionHandler uncaughtExceptionHandler
             = new Thread.UncaughtExceptionHandler() {
         @Override

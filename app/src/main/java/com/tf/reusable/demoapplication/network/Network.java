@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.google.common.io.CharStreams;
 import com.tf.reusable.demoapplication.model.SimpleKeyValuePair;
 import com.tf.reusable.demoapplication.util.Logger;
 
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class Network {
                 is = conn.getInputStream();
 
                 // Convert the InputStream into a string
-                String contentAsString = readIt(is, 500);
+                String contentAsString = inputStreamToString(inputStream);
 
                 Logger.i(TAG, urlString);
                 Logger.i(TAG, contentAsString);
@@ -95,11 +95,7 @@ public class Network {
         return jsonObject;
     }
 
-    public static String readIt(InputStream stream, int len) throws IOException {
-        Reader reader = null;
-        reader = new InputStreamReader(stream, "UTF-8");
-        char[] buffer = new char[len];
-        reader.read(buffer);
-        return new String(buffer);
+    public static String inputStreamToString(InputStream stream) throws IOException {
+        return CharStreams.toString(new InputStreamReader(stream));
     }
 }
