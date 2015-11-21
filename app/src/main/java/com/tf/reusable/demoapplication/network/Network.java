@@ -45,6 +45,7 @@ public class Network {
                 conn.setConnectTimeout(timeout);
                 conn.setRequestMethod("POST");
                 conn.setDoInput(true);
+                conn.setDoOutput(true);
 
                 OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
                 String output = getJSONObject(keyValuePairs).toString();
