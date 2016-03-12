@@ -1,5 +1,6 @@
 package com.tf.reusable.demoapplication.network;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -11,6 +12,7 @@ import com.tf.reusable.demoapplication.util.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +20,8 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by kamran on 03/08/15.
@@ -27,28 +31,37 @@ import java.util.ArrayList;
 public class Network {
     private static final String TAG = "Network";
     private static final int TIMEOUT = 30000;
+    private static final String POST = "POST";
+    private static final String GET = "GET";
+    private static final String PUT = "PUT";
 
-    public static String sendRequest(Context context, String urlString, ArrayList<SimpleKeyValuePair> keyValuePairs) {
-        return sendRequest(context, urlString, keyValuePairs, TIMEOUT);
+    public static String getRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
+        return request(context, urlString, values, GET);
     }
 
-    public static String sendRequest(Context context, String urlString, ArrayList<SimpleKeyValuePair> keyValuePairs, int timeout) {
-        Thread.setDefaultUncaughtExceptionHandler(Logger.uncaughtExceptionHandler);
+    public static String postRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
+        return request(context, urlString, values, POST);
+    }
 
+    public static String putRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
+        return request(context, urlString, values, PUT);
+    }
+
+    public static String request(Context context, String urlString, ContentValues values, String method) throws IOException, JSONException, NoInternetException {
         if (isConnectedToInternet(context)) {
             InputStream inputStream = null;
 
             try {
                 URL url = new URL(urlString);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(timeout);
-                conn.setConnectTimeout(timeout);
-                conn.setRequestMethod("POST");
+                conn.setReadTimeout(TIMEOUT);
+                conn.setConnectTimeout(TIMEOUT);
+                conn.setRequestMethod(method);
                 conn.setDoInput(true);
                 conn.setDoOutput(true);
 
                 OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-                String output = getJSONObject(keyValuePairs).toString();
+                String output = getJSONObject(values).toString();
                 writer.write(output);
                 writer.flush();
                 writer.close();
@@ -65,8 +78,6 @@ public class Network {
                 Logger.i(TAG, contentAsString);
 
                 return contentAsString;
-            } catch (Exception e) {
-                e.printStackTrace();
             } finally {
                 try {
                     if (inputStream != null)
@@ -75,9 +86,9 @@ public class Network {
                     e.printStackTrace();
                 }
             }
+        } else {
+            throw new NoInternetException();
         }
-
-        return "{\"errorCode\":\"-1\", \"errorMessage\":\"No internet connectivity\"}";
     }
 
     public static boolean isConnectedToInternet(Context context) {
@@ -87,15 +98,28 @@ public class Network {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    private static JSONObject getJSONObject(ArrayList<SimpleKeyValuePair> keyValuePairs) throws JSONException {
+    private static JSONObject getJSONObject(ContentValues values) throws JSONException {
         JSONObject jsonObject = new JSONObject();
-        for (SimpleKeyValuePair keyValuePair : keyValuePairs)
-            jsonObject.put(keyValuePair.getKey(), keyValuePair.getValue());
+        Set<Map.Entry<String, Object>> keyValues = values.valueSet();
+        for (Map.Entry<String, Object> keyValue : keyValues)
+            jsonObject.put(keyValue.getKey(), keyValue.getValue());
 
         return jsonObject;
     }
 
     public static String inputStreamToString(InputStream stream) throws IOException {
-        return CharStreams.toString(new InputStreamReader(stream));
+        StringBuilder stringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+        String read;
+
+        while ((read = bufferedReader.readLine()) != null) {
+            stringBuilder.append(read);
+        }
+
+        bufferedReader.close();
+        return stringBuilder.toString();
+    }
+
+    private static class NoInternetException extends RuntimeException {
     }
 }
