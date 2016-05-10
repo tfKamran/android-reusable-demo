@@ -10,14 +10,12 @@ import com.tf.reusable.demoapplication.util.Preferences;
  * Created by kamran on 1/9/15.
  */
 public class MainApplication extends Application {
-    public static Thread.UncaughtExceptionHandler defaultExceptionHandler;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(Logger.uncaughtExceptionHandler);
+        Logger.initialize(getApplicationContext(), Thread.getDefaultUncaughtExceptionHandler());
 
         Preferences.initialize(MainApplication.this);
         DatabaseLayer.initialize(MainApplication.this);

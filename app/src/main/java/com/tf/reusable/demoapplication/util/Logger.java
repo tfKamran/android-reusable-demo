@@ -1,9 +1,8 @@
 package com.tf.reusable.demoapplication.util;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
-
-import com.tf.reusable.demoapplication.MainApplication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,9 +14,19 @@ import java.util.Calendar;
  * Created by kamran on 16/12/14.
  */
 public class Logger {
-    private static final String APP_NAME = "DemoApplication";
+    public static Thread.UncaughtExceptionHandler defaultExceptionHandler;
 
+    private static String applicationName;
     public static boolean ENABLED = true;
+
+    public static void initialize(Context context,
+                                  Thread.UncaughtExceptionHandler exceptionHandler) {
+        defaultExceptionHandler = exceptionHandler;
+
+        Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+
+        applicationName = (String) context.getApplicationInfo().loadLabel(context.getPackageManager());
+    }
 
     public static void i(String tag, String message) {
         if (ENABLED)
@@ -93,7 +102,7 @@ public class Logger {
 
             try {
                 File file = new File(Environment.getExternalStorageDirectory()
-                        +"/" + APP_NAME + "/log-" + Calendar.getInstance().getTime() + ".txt");
+                        +"/" + applicationName + "/log-" + getTimeStamp() + ".txt");
                 FileOutputStream fileOutputStream = new FileOutputStream(file);
 
                 file.getParentFile().mkdirs();
@@ -108,11 +117,22 @@ public class Logger {
                 if (ENABLED)
                     Log.e("Uncaught", stringWriter.toString());
 
-                MainApplication.defaultExceptionHandler.uncaughtException(thread, ex);
+                defaultExceptionHandler.uncaughtException(thread, ex);
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
         }
     };
+
+    private static String getTimeStamp() {
+        Calendar calendar = Calendar.getInstance();
+        return calendar.get(Calendar.YEAR)
+                + "-" + calendar.get(Calendar.MONTH)
+                + "-" + calendar.get(Calendar.DAY_OF_MONTH)
+                + "-" + calendar.get(Calendar.HOUR_OF_DAY)
+                + "-" + calendar.get(Calendar.MINUTE)
+                + "-" + calendar.get(Calendar.SECOND)
+                + "-" + calendar.get(Calendar.MILLISECOND);
+    }
 }
