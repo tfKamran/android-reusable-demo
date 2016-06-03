@@ -103,9 +103,10 @@ public class Logger {
             try {
                 File file = new File(Environment.getExternalStorageDirectory()
                         +"/" + applicationName + "/log-" + getTimeStamp() + ".txt");
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
 
                 file.getParentFile().mkdirs();
+                
+                FileOutputStream fileOutputStream = new FileOutputStream(file);
 
                 StringWriter stringWriter = new StringWriter();
                 PrintWriter printWriter = new PrintWriter(stringWriter);
