@@ -16,10 +16,11 @@ import java.util.Calendar;
  * Created by kamran on 16/12/14.
  */
 public class Logger {
-    public static Thread.UncaughtExceptionHandler defaultExceptionHandler;
+
+    private static Thread.UncaughtExceptionHandler defaultExceptionHandler;
 
     private static String applicationName;
-    public static boolean ENABLED = true;
+    private static boolean ENABLED = true;
     private static LogDatabase logDatabase;
 
     public static void initialize(Context context,
@@ -109,7 +110,7 @@ public class Logger {
         }
     }
 
-    public static Thread.UncaughtExceptionHandler uncaughtExceptionHandler
+    private static Thread.UncaughtExceptionHandler uncaughtExceptionHandler
             = new Thread.UncaughtExceptionHandler() {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
