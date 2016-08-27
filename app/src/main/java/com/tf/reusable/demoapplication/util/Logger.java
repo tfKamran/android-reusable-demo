@@ -1,6 +1,8 @@
 package com.tf.reusable.demoapplication.util;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
@@ -18,12 +20,15 @@ public class Logger {
 
     private static String applicationName;
     public static boolean ENABLED = true;
+    private static LogDatabase logDatabase;
 
     public static void initialize(Context context,
                                   Thread.UncaughtExceptionHandler exceptionHandler) {
         defaultExceptionHandler = exceptionHandler;
 
         Thread.setDefaultUncaughtExceptionHandler(uncaughtExceptionHandler);
+
+        logDatabase = new LogDatabase(context, "logger.db", null, 1);
 
         applicationName = (String) context.getApplicationInfo().loadLabel(context.getPackageManager());
     }
@@ -94,6 +99,16 @@ public class Logger {
         Log.wtf(e.getClass().getName(), stringWriter.toString());
     }
 
+    public static void logToDatabase(String tag, String log) {
+        if (ENABLED) {
+            try {
+                logDatabase.log(tag, log);
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+        }
+    }
+
     public static Thread.UncaughtExceptionHandler uncaughtExceptionHandler
             = new Thread.UncaughtExceptionHandler() {
         @Override
@@ -124,6 +139,43 @@ public class Logger {
             }
         }
     };
+
+    private static class LogDatabase extends SQLiteOpenHelper {
+
+        private final static class TableLogs {
+            static final String TABLE_NAME = "logs";
+
+            static final String _ID = "_id";
+            static final String DATE_TIME = "date_time";
+            static final String TAG = "tag";
+            static final String LOG = "log";
+        }
+
+        LogDatabase(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+            super(context, name, factory, version);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL("CREATE TABLE " + TableLogs.TABLE_NAME
+                    + " (" + TableLogs._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + TableLogs.DATE_TIME + " TEXT, "
+                    + TableLogs.TAG + " TEXT, "
+                    + TableLogs.LOG + " TEXT)");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        }
+
+        void log(String tag, String log) {
+            getWritableDatabase().execSQL("INSERT INTO " + LogDatabase.TableLogs.TABLE_NAME
+                    + " (" + TableLogs.DATE_TIME + ", "  + TableLogs.TAG + ", " + TableLogs.LOG + ")"
+                    + " VALUES ('" + getTimeStamp() + "', '" + tag + "', '" + log + "')"
+            );
+        }
+    }
 
     private static String getTimeStamp() {
         Calendar calendar = Calendar.getInstance();
