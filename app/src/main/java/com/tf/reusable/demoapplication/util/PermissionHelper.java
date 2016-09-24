@@ -17,16 +17,24 @@ public class PermissionHelper {
 
     public static void askForAllPermissions(Activity activity) {
         try {
-            String[] permissions = activity.getPackageManager()
-                    .getPackageInfo(activity.getPackageName(), PackageManager.GET_PERMISSIONS)
-                    .requestedPermissions;
+            String[] permissions = getRequiredPermissions(activity);
 
             if (permissions != null) {
-                askForPermission(activity, permissions);
+                for (String permission : permissions) {
+                    if (!isPermissionGranted(activity, permission)) {
+                        askForPermission(activity, permission);
+                    }
+                }
             }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String[] getRequiredPermissions(Context context) throws PackageManager.NameNotFoundException {
+        return context.getPackageManager()
+                        .getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS)
+                        .requestedPermissions;
     }
 
     public static boolean isPermissionGranted(Context context, String permission) {
