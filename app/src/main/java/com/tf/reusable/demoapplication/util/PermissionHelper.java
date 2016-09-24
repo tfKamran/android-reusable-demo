@@ -42,6 +42,24 @@ public class PermissionHelper {
                 || ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
+    public static boolean areAllPermissionsGranted(Context context) {
+        boolean areGranted = true;
+
+        try {
+            String[] permissions = getRequiredPermissions(context);
+
+            for (String permission : permissions) {
+                areGranted = areGranted && isPermissionGranted(context, permission);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Logger.printStackTrace(e);
+
+            return false;
+        }
+
+        return areGranted;
+    }
+
     public static void askForPermission(Activity activity, String... permissions) {
         if (Build.VERSION.SDK_INT >= 22) {
             ActivityCompat.requestPermissions(activity, permissions, PERMISSION_REQUEST_CODE);
