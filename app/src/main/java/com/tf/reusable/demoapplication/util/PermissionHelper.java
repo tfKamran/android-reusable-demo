@@ -3,9 +3,12 @@ package com.tf.reusable.demoapplication.util;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PermissionInfo;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+
+import java.util.ArrayList;
 
 /**
  * Created by kamran on 8/28/16.
@@ -18,13 +21,18 @@ public class PermissionHelper {
     public static void askForAllPermissions(Activity activity) {
         try {
             String[] permissions = getRequiredPermissions(activity);
+            ArrayList<String> permissionsToBeAsked = new ArrayList<>();
 
             if (permissions != null) {
                 for (String permission : permissions) {
-                    if (!isPermissionGranted(activity, permission)) {
-                        askForPermission(activity, permission);
+                    if (!isPermissionGranted(activity, permission) && isDangerous(activity, permission)) {
+                        permissionsToBeAsked.add(permission);
                     }
                 }
+            }
+
+            if (permissionsToBeAsked.size() > 0) {
+                askForPermission(activity, permissionsToBeAsked.toArray(new String[]{}));
             }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
@@ -64,5 +72,18 @@ public class PermissionHelper {
         if (Build.VERSION.SDK_INT >= 22) {
             ActivityCompat.requestPermissions(activity, permissions, PERMISSION_REQUEST_CODE);
         }
+    }
+
+    private static boolean isDangerous(Context context, String permission) {
+        boolean isDangerous = false;
+
+        try {
+            isDangerous = context.getPackageManager().getPermissionInfo(permission, 0).protectionLevel
+                    == PermissionInfo.PROTECTION_DANGEROUS;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return isDangerous;
     }
 }
