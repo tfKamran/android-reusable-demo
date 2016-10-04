@@ -57,7 +57,8 @@ public class PermissionHelper {
             String[] permissions = getRequiredPermissions(context);
 
             for (String permission : permissions) {
-                areGranted = areGranted && isPermissionGranted(context, permission);
+                areGranted = areGranted
+                        && (!isDangerous(context, permission) || isPermissionGranted(context, permission));
             }
         } catch (PackageManager.NameNotFoundException e) {
             Logger.printStackTrace(e);
