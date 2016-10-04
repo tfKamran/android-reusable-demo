@@ -69,6 +69,10 @@ public class PermissionHelper {
         return areGranted;
     }
 
+    public static void askForPermission(Activity activity, String permissions) {
+        askForPermission(activity, new String[]{permissions});
+    }
+
     public static void askForPermission(Activity activity, String... permissions) {
         if (Build.VERSION.SDK_INT >= 22) {
             ActivityCompat.requestPermissions(activity, permissions, PERMISSION_REQUEST_CODE);
