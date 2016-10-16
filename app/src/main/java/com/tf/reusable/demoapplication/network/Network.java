@@ -120,6 +120,6 @@ public class Network {
         return stringBuilder.toString();
     }
 
-    private static class NoInternetException extends RuntimeException {
+    public static class NoInternetException extends RuntimeException {
     }
 }
