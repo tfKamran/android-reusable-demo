@@ -5,8 +5,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.google.common.io.CharStreams;
-import com.tf.reusable.demoapplication.model.SimpleKeyValuePair;
 import com.tf.reusable.demoapplication.util.Logger;
 
 import org.json.JSONException;
@@ -19,35 +17,34 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by kamran on 03/08/15.
- * <p/>
- * A common class with methods to communicate with the server
+ * Created by kamran on 10/17/16.
  */
+
 public class Network {
+
     private static final String TAG = "Network";
     private static final int TIMEOUT = 30000;
     private static final String POST = "POST";
     private static final String GET = "GET";
     private static final String PUT = "PUT";
 
-    public static String getRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
+    public static NetworkResponse getRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
         return request(context, urlString, values, GET);
     }
 
-    public static String postRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
+    public static NetworkResponse postRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
         return request(context, urlString, values, POST);
     }
 
-    public static String putRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
+    public static NetworkResponse putRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
         return request(context, urlString, values, PUT);
     }
 
-    public static String request(Context context, String urlString, ContentValues values, String method) throws IOException, JSONException, NoInternetException {
+    public static NetworkResponse request(Context context, String urlString, ContentValues values, String method) throws IOException, JSONException, NoInternetException {
         if (isConnectedToInternet(context)) {
             InputStream inputStream = null;
 
@@ -68,7 +65,7 @@ public class Network {
 
                 // Starts the query
                 conn.connect();
-                int response = conn.getResponseCode();
+                int responseCode = conn.getResponseCode();
                 inputStream = conn.getInputStream();
 
                 // Convert the InputStream into a string
@@ -77,7 +74,7 @@ public class Network {
                 Logger.i(TAG, urlString);
                 Logger.i(TAG, contentAsString);
 
-                return contentAsString;
+                return new NetworkResponse(responseCode, contentAsString);
             } finally {
                 try {
                     if (inputStream != null)
@@ -118,6 +115,24 @@ public class Network {
 
         bufferedReader.close();
         return stringBuilder.toString();
+    }
+
+    public static class NetworkResponse {
+        private int code;
+        private String response;
+
+        public NetworkResponse(int code, String response) {
+            this.code = code;
+            this.response = response;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getResponse() {
+            return response;
+        }
     }
 
     public static class NoInternetException extends RuntimeException {
