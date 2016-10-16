@@ -68,7 +68,7 @@ public class Network {
                 int responseCode = conn.getResponseCode();
                 inputStream = conn.getInputStream();
 
-                if (responseCode >= 400) {
+                if (responseCode < 400) {
                     inputStream = conn.getInputStream();
                 } else {
                     inputStream = conn.getErrorStream();
