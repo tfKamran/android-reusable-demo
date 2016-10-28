@@ -32,41 +32,45 @@ public class Network {
     private static final String GET = "GET";
     private static final String PUT = "PUT";
 
-    public static NetworkResponse getRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
-        return request(context, urlString, values, GET);
+    public static NetworkResponse getRequest(Context context, String urlString, ContentValues queryParameters) throws IOException, JSONException, NoInternetException {
+        return request(context, urlString, queryParameters, null, GET);
     }
 
-    public static NetworkResponse postRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
-        return request(context, urlString, values, POST);
+    public static NetworkResponse postRequest(Context context, String urlString, ContentValues queryParameters, JSONObject body) throws IOException, JSONException, NoInternetException {
+        return request(context, urlString, queryParameters, body, POST);
     }
 
-    public static NetworkResponse putRequest(Context context, String urlString, ContentValues values) throws IOException, JSONException, NoInternetException {
-        return request(context, urlString, values, PUT);
+    public static NetworkResponse putRequest(Context context, String urlString, ContentValues queryParameters, JSONObject body) throws IOException, JSONException, NoInternetException {
+        return request(context, urlString, queryParameters, body, PUT);
     }
 
-    public static NetworkResponse request(Context context, String urlString, ContentValues values, String method) throws IOException, JSONException, NoInternetException {
+    public static NetworkResponse request(Context context, String urlString, ContentValues queryParameters, JSONObject body, String method) throws IOException, JSONException, NoInternetException {
         if (isConnectedToInternet(context)) {
             InputStream inputStream = null;
 
             try {
+                urlString += getQueryString(queryParameters);
+
                 URL url = new URL(urlString);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(TIMEOUT);
                 conn.setConnectTimeout(TIMEOUT);
                 conn.setRequestMethod(method);
                 conn.setDoInput(true);
-                conn.setDoOutput(true);
 
-                OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-                String output = getJSONObject(values).toString();
-                writer.write(output);
-                writer.flush();
-                writer.close();
+                if (body != null && body.length() > 0) {
+                    conn.setDoOutput(true);
+
+                    OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+                    String output = body.toString();
+                    writer.write(output);
+                    writer.flush();
+                    writer.close();
+                }
 
                 // Starts the query
                 conn.connect();
                 int responseCode = conn.getResponseCode();
-                inputStream = conn.getInputStream();
 
                 if (responseCode < 400) {
                     inputStream = conn.getInputStream();
@@ -94,20 +98,25 @@ public class Network {
         }
     }
 
+    private static String getQueryString(ContentValues queryParameters) {
+        String queryString = "";
+
+        if (queryParameters != null) {
+            for (Map.Entry<String, Object> map : queryParameters.valueSet()) {
+                queryString += "&" + map.getKey() + "=" + map.getValue();
+            }
+        }
+
+        queryString = queryString.replaceFirst("&", "?");
+
+        return queryString;
+    }
+
     public static boolean isConnectedToInternet(Context context) {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
-
-    private static JSONObject getJSONObject(ContentValues values) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        Set<Map.Entry<String, Object>> keyValues = values.valueSet();
-        for (Map.Entry<String, Object> keyValue : keyValues)
-            jsonObject.put(keyValue.getKey(), keyValue.getValue());
-
-        return jsonObject;
     }
 
     public static String inputStreamToString(InputStream stream) throws IOException {
