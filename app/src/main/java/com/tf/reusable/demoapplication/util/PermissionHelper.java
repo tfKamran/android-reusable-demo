@@ -95,6 +95,28 @@ public class PermissionHelper {
         return isDangerous;
     }
 
+    public static boolean isAnyPermissionDeniedByUser(Activity activity) {
+        boolean isChecked = false;
+
+        if (Build.VERSION.SDK_INT >= 22) {
+            return false;
+        }
+
+        try {
+            String[] requiredPermissions = getRequiredPermissions(activity);
+
+            for (String requiredPermission : requiredPermissions) {
+                if (isDangerous(activity, requiredPermission)) {
+                    isChecked = isChecked || activity.shouldShowRequestPermissionRationale(requiredPermission);
+                }
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return isChecked;
+    }
+
     public static void showPermissionSettings(Activity activity, int code) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
