@@ -2,9 +2,12 @@ package com.tf.reusable.demoapplication.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -90,5 +93,13 @@ public class PermissionHelper {
         }
 
         return isDangerous;
+    }
+
+    public static void showPermissionSettings(Activity activity, int code) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.setData(Uri.parse("package:" + activity.getPackageName()));
+
+        activity.startActivityForResult(intent, code);
     }
 }
