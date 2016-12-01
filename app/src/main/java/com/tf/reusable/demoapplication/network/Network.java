@@ -62,8 +62,7 @@ public class Network {
                     conn.setDoOutput(true);
 
                     OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-                    String output = body.toString();
-                    writer.write(output);
+                    writer.write(body.toString());
                     writer.flush();
                     writer.close();
                 }
