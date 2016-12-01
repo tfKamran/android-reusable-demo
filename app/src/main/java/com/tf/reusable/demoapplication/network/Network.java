@@ -81,6 +81,7 @@ public class Network {
                 String contentAsString = inputStreamToString(inputStream);
 
                 Logger.i(TAG, urlString);
+                Logger.i(TAG, body != null ? body.toString() : "");
                 Logger.i(TAG, contentAsString);
 
                 return new NetworkResponse(responseCode, contentAsString);
